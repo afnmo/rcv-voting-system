@@ -1,0 +1,18 @@
+# Build results
+bin/
+obj/
+
+# Rider / Visual Studio
+.idea/
+.vs/
+*.user
+*.suo
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+
+# Local app settings (secrets)
+appsettings.Development.json
