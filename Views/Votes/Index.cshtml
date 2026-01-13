@@ -1,0 +1,174 @@
+@model IEnumerable<VotingSystem.ViewModels.VoteListItemViewModel>
+
+@{
+    ViewData["Title"] = "التصويتات الجارية";
+    var now = DateTime.UtcNow;
+
+    var closingSoon = Model
+        .Where(x => (x.Vote.EndTime - now).TotalHours <= 3)
+        .ToList();
+
+    var others = Model
+        .Where(x => (x.Vote.EndTime - now).TotalHours > 3)
+        .ToList();
+}
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+    <div class="mb-12 pb-4 border-b border-gray-200">
+        <h1 class="text-2xl font-bold text-gray-800">
+            التصويتات الجارية
+        </h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+        <div class="lg:col-span-2 space-y-10">
+
+            @if (!Model.Any())
+            {
+                <div class="py-20 text-center text-gray-500">
+                    <p class="mb-4">لا توجد تصويتات مفتوحة حالياً</p>
+                </div>
+            }
+            else
+            {
+                @if (closingSoon.Any())
+                {
+                    <div>
+                        <h2 class="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-3">
+                            <i class="fa-regular fa-clock"></i>
+                            ينتهي قريبًا
+                        </h2>
+
+                        <div class="divide-y border rounded-xl bg-white">
+                            @foreach (var item in closingSoon)
+                            {
+                                var vote = item.Vote;
+                                var remaining = vote.EndTime - now;
+
+                                <a asp-action="Rank"
+                                   asp-route-id="@vote.VoteId"
+                                   class="flex justify-between items-center px-6 py-4 hover:bg-gray-50">
+
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-medium text-gray-800">
+                                            @vote.Title
+                                        </span>
+
+                                        @if (item.AlreadyVoted)
+                                        {
+                                            <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full
+                                                         bg-green-50 text-green-700 border border-green-200
+                                                         flex items-center gap-1">
+                                                <i class="fa-solid fa-circle-check"></i>
+                                                تم التصويت
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <span class="flex items-center gap-2 text-sm text-red-600">
+                                        <i class="fa-regular fa-clock"></i>
+                                        @(remaining.TotalMinutes < 60
+                                            ? $"{(int)remaining.TotalMinutes} دقيقة"
+                                            : $"{(int)remaining.TotalHours} ساعة")
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                    </span>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (others.Any())
+                {
+                    <div>
+                        <h2 class="flex items-center gap-2 text-sm font-semibold text-gray-600 mb-3">
+                            <i class="fa-regular fa-clock"></i>
+                            باقي وقت كافٍ
+                        </h2>
+
+                        <div class="divide-y border rounded-xl bg-white">
+                            @foreach (var item in others)
+                            {
+                                var vote = item.Vote;
+                                var remaining = vote.EndTime - now;
+
+                                <a asp-action="Rank"
+                                   asp-route-id="@vote.VoteId"
+                                   class="flex justify-between items-center px-6 py-4 hover:bg-gray-50 transition">
+
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-medium text-gray-800">
+                                            @vote.Title
+                                        </span>
+
+                                        @if (item.AlreadyVoted)
+                                        {
+                                            <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full
+                                                         bg-green-50 text-green-700 border border-green-200
+                                                         flex items-center gap-1">
+                                                <i class="fa-solid fa-circle-check"></i>
+                                                تم التصويت
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <span class="flex items-center gap-2 text-sm text-gray-500">
+                                        <i class="fa-regular fa-clock"></i>
+                                        @(remaining.TotalMinutes < 60
+                                            ? $"{(int)remaining.TotalMinutes} دقيقة"
+                                            : $"{(int)remaining.TotalHours} ساعة")
+                                        <i class="fa-solid fa-arrow-left"></i>
+                                    </span>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <aside class="space-y-8 text-sm text-gray-600
+                      lg:border-r lg:border-gray-200 lg:pr-8">
+
+            <div class="sticky top-24 space-y-6">
+
+
+                <div>
+                    <p class="font-semibold text-gray-800 mb-3">
+                        حالة اليوم
+                    </p>
+
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-gray-500"></i>
+                        <span>
+                            عدد التصويتات المفتوحة:
+                            <strong>@Model.Count()</strong>
+                        </span>
+                    </div>
+
+                    @if (closingSoon.Any())
+                    {
+                        <div class="flex items-center gap-2 text-red-600 mt-2">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>@closingSoon.Count تصويت ينتهي قريبًا</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="border-t pt-4 space-y-3">
+                    <a asp-action="Create"
+                       class="flex items-center justify-center gap-2
+                              px-4 py-2 rounded-lg
+                              bg-purple-600 text-white hover:bg-purple-700">
+                        <i class="fa-solid fa-plus"></i>
+                        إنشاء تصويت جديد
+                    </a>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+</div>

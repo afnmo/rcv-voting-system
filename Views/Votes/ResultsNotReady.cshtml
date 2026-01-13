@@ -1,0 +1,37 @@
+@model VotingSystem.Models.Vote
+
+@{
+    ViewData["Title"] = "النتائج غير متاحة";
+}
+
+<div class="max-w-4xl mx-auto py-16 px-6">
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center mb-4">
+            <i class="fa-solid fa-hourglass-half text-purple-600 text-xl"></i>
+        </div>
+
+        <h1 class="text-xl font-semibold text-gray-900 mb-2">
+            النتائج غير متاحة حالياً
+        </h1>
+
+        <p class="text-sm text-gray-500 mb-6">
+            سيتم عرض النتائج بعد إغلاق التصويت أو بعد انتهاء المدة.
+        </p>
+
+        <div class="text-sm text-gray-700 mb-8">
+            <span class="text-gray-500">التصويت:</span>
+            <span class="font-semibold">@Model.Title</span>
+        </div>
+
+        <a asp-controller="Votes" asp-action="Rank" asp-route-id="@Model.VoteId"
+           class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition">
+            <i class="fa-solid fa-check-to-slot"></i>
+            الانتقال لصفحة التصويت
+        </a>
+
+        <div class="mt-6 text-[11px] text-gray-400">
+            ينتهي: @Model.EndTime.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")
+        </div>
+    </div>
+</div>

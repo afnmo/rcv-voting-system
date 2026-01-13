@@ -1,0 +1,52 @@
+@model VotingSystem.Models.Vote
+
+<div class="space-y-5">
+
+    <div>
+        <h4 class="text-base font-semibold text-gray-800 flex items-center gap-2">
+            <i class="fa-solid fa-square-poll-vertical text-purple-600"></i>
+            @Model.Title
+        </h4>
+        <p class="text-xs text-gray-500 mt-1">
+            اسحبي الخيارات ورتّبيها حسب تفضيلك (الأعلى = الأفضل)
+        </p>
+    </div>
+
+    <ul id="rcvList"
+        class="space-y-2">
+
+        @foreach (var option in Model.Options)
+        {
+            <li draggable="true"
+                data-option-id="@option.OptionId"
+                class="rcv-item flex items-center gap-3
+                       p-3 rounded-xl bg-white border
+                       cursor-move select-none
+                       hover:bg-purple-50 transition">
+
+                <i class="fa-solid fa-grip-lines text-gray-400"></i>
+
+                <span class="text-sm font-medium text-gray-800">
+                    @option.OptionText
+                </span>
+
+                <span class="ml-auto text-xs text-gray-400">
+                    ترتيب
+                </span>
+            </li>
+        }
+    </ul>
+
+    <button onclick="submitVote()"
+            class="w-full mt-4 py-2.5
+                   bg-purple-600 hover:bg-purple-700
+                   text-white text-sm rounded-xl
+                   flex items-center justify-center gap-2">
+        <i class="fa-solid fa-paper-plane"></i>
+        إرسال الترتيب
+    </button>
+
+    <p class="text-xs text-center text-gray-400">
+        سيتم احتساب تصويتك باستخدام Ranked-Choice Voting
+    </p>
+</div>

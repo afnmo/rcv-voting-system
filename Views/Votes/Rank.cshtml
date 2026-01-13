@@ -1,0 +1,424 @@
+@model VotingSystem.ViewModels.VoteRankViewModel
+
+@{
+ViewData["Title"] = "التصويت";
+var total = Model.Vote.Options?.Count ?? 0;
+var isClosed = (bool)(ViewBag.IsClosed ?? false);
+}
+
+<div class="max-w-5xl mx-auto px-6 py-10">
+
+    <div class="flex items-center justify-between mb-8">
+        <a asp-action="Index"
+           class="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-right"></i>
+            رجوع للتصويتات
+        </a>
+
+        <div class="text-xs text-gray-500 flex items-center gap-2">
+            <i class="fa-solid fa-clock"></i>
+            ينتهي: @Model.Vote.EndTime.ToLocalTime().ToString("yyyy/MM/dd HH:mm")
+        </div>
+    </div>
+    
+    @if (!isClosed && !Model.AlreadyVoted)
+    {
+    <div class="bg-white border rounded-3xl p-6 shadow-sm">
+        <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <i class="fa-solid fa-square-poll-vertical text-purple-600"></i>
+            @Model.Vote.Title
+        </h1>
+
+
+            <p class="text-gray-500 mt-2 text-sm leading-relaxed">
+                اختر الأفضل ثم التالي… حتى يكتمل ترتيب الخيارات (Ranked-Choice Voting).
+            </p>
+
+            <div class="mt-4 flex items-center gap-3 text-sm text-gray-600">
+                <div class="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div id="progressBar" class="bg-purple-600 h-2" style="width:0%"></div>
+                </div>
+                <span id="progressText" class="text-xs text-gray-500">0 / @total</span>
+            </div>
+    </div>
+
+    }
+
+
+    @if (isClosed)
+    {
+    <div class="mt-6 rounded-3xl border border-gray-200 bg-gray-50 p-6">
+        <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <i class="fa-solid fa-lock"></i>
+            هذا التصويت مغلق
+        </h3>
+        <p class="mt-1 text-xs text-gray-600">
+            انتهى وقت التصويت أو تم إغلاقه من قبل صاحب التصويت.
+        </p>
+
+        <div class="mt-4 flex flex-col sm:flex-row gap-3">
+            <a asp-action="Details" asp-route-id="@Model.Vote.VoteId"
+               class="px-6 py-3 rounded-xl border border-gray-200 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 justify-center">
+                <i class="fa-solid fa-chart-column"></i>
+                عرض النتائج
+            </a>
+
+            <a asp-action="Index"
+               class="px-6 py-3 rounded-xl bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 flex items-center gap-2 justify-center">
+                <i class="fa-solid fa-arrow-right"></i>
+                رجوع للتصويتات
+            </a>
+        </div>
+    </div>
+    }
+    else if (Model.AlreadyVoted)
+    {
+    <div class="mt-6 rounded-3xl border border-green-200 bg-green-50 p-6">
+        <div class="flex items-start justify-between gap-4">
+            <div>
+                <h3 class="text-sm font-bold text-green-800 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check"></i>
+                    تم تسجيل صوتك
+                </h3>
+                <p class="mt-1 text-xs text-green-700">
+                    هذا هو ترتيبك الذي تم حفظه ✅
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="ShareBtn"
+                        type="button"
+                        class="w-10 h-10 rounded-xl border border-green-200
+                       hover:bg-white text-green-800
+                       flex items-center justify-center"
+                        title="مشاركة رابط التصويت">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
+
+                <a asp-action="Results" asp-route-id="@Model.Vote.VoteId"
+                   class="text-[11px] px-6 py-3 rounded-xl border border-green-200 text-sm text-green-800 hover:bg-white
+                  flex items-center gap-2 justify-center">
+                    <i class="fa-solid fa-circle-info"></i>
+                    عرض النتائج
+                </a>
+            </div>
+
+        </div>
+
+        <div class="mt-4 space-y-3">
+            @if (Model.MyRankings != null && Model.MyRankings.Any())
+            {
+            @foreach (var r in Model.MyRankings)
+            {
+            <div class="flex items-center justify-between rounded-2xl bg-white border border-green-100 px-4 py-3">
+                <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full bg-green-100 text-green-700 font-bold text-sm flex items-center justify-center">
+                                    @r.RankNumber
+                                </span>
+
+                    <span class="text-sm font-semibold text-gray-800">
+                                    @r.OptionText
+                                </span>
+                </div>
+
+                <i class="fa-solid fa-star text-green-400"></i>
+            </div>
+            }
+            }
+            else
+            {
+            <div class="text-sm text-green-700">
+                تم تسجيل صوتك ✅
+            </div>
+            }
+        </div>
+
+    </div>
+    }
+    else
+    {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+
+        <div class="bg-white border rounded-3xl p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <i class="fa-solid fa-hand-pointer text-purple-600"></i>
+                    اختر التالي
+                </h2>
+
+                <button id="undoBtn" type="button"
+                        onclick="undoPick()"
+                        class="text-xs px-3 py-1.5 rounded-lg border
+                                   text-gray-700 hover:bg-gray-50 disabled:opacity-40
+                                   inline-flex items-center gap-2"
+                        disabled>
+                    <i class="fa-solid fa-rotate-left"></i>
+                    تراجع
+                </button>
+            </div>
+
+            <div id="availableList" class="space-y-2">
+                @foreach (var option in Model.Vote.Options!)
+                {
+                <button type="button"
+                        class="option-card w-full text-right
+                                       p-4 rounded-2xl border bg-white
+                                       hover:bg-purple-50 hover:border-purple-300
+                                       transition flex items-center gap-3"
+                        data-id="@option.OptionId">
+
+                            <span class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
+                                <i class="fa-solid fa-star"></i>
+                            </span>
+
+                    <span class="font-medium text-gray-800 text-sm">
+                                @option.OptionText
+                            </span>
+
+                    <span class="ml-auto text-xs text-gray-400 inline-flex items-center gap-2">
+                                اضغط للاختيار
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </span>
+                </button>
+                }
+            </div>
+
+            <div id="doneHint"
+                 class="hidden mt-4 text-sm text-green-700 bg-green-50 border border-green-200 p-3 rounded-2xl">
+                <i class="fa-solid fa-circle-check"></i>
+                اكتمل الترتيب! يمكنك الإرسال الآن.
+            </div>
+        </div>
+
+        <div class="bg-white border rounded-3xl p-6 shadow-sm">
+            <h2 class="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-4">
+                <i class="fa-solid fa-list-ol text-purple-600"></i>
+                ترتيبك الحالي
+            </h2>
+
+            <div id="rankedList" class="space-y-2">
+                <div class="text-sm text-gray-500 leading-relaxed flex items-center gap-2">
+                    <i class="fa-regular fa-hand-point-right text-gray-500"></i>
+
+                    <span>لم يتم اختيار أي خيار بعد — ابدأ باختيار الأفضل من اليمين</span>
+
+                </div>
+            </div>
+
+            <div class="mt-6 flex gap-3">
+                <form id="rankForm"
+                      asp-action="Rank"
+                      asp-route-id="@Model.Vote.VoteId"
+                      method="post"
+                      class="flex-1">
+                    @Html.AntiForgeryToken()
+
+                    <div id="rankInputs"></div>
+
+                    <button id="submitBtn" type="submit"
+                            class="w-full py-2.5 rounded-xl
+                                       bg-purple-600 hover:bg-purple-700
+                                       text-white text-sm font-medium
+                                       flex items-center justify-center gap-2
+                                       disabled:opacity-40"
+                            disabled>
+                        <i class="fa-solid fa-paper-plane"></i>
+                        إرسال الترتيب
+                    </button>
+                </form>
+                
+                @if (Model.IsOwner)
+                {
+                    <a asp-action="Details" asp-route-id="@Model.Vote.VoteId"
+                       class="px-4 py-2.5 rounded-xl border text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info"></i>
+                        تفاصيل
+                    </a>
+                }
+
+            </div>
+
+            <p class="mt-3 text-xs text-gray-400 leading-relaxed">
+                ملاحظة: سيتم اعتماد ترتيبك كما هو. (تصويت واحد لكل مستخدم)
+            </p>
+        </div>
+
+    </div>
+    }
+
+</div>
+
+@section Scripts
+{
+<script>
+    const totalOptions = @total;
+
+    const ranked = [];
+
+    const availableList = document.getElementById('availableList');
+    const rankedList = document.getElementById('rankedList');
+    const undoBtn = document.getElementById('undoBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const doneHint = document.getElementById('doneHint');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    const shareBtn = document.getElementById("ShareBtn");
+    const shareUrl = "@Url.Action("Results", "Votes", new { id = Model.Vote.VoteId }, protocol: Context.Request.Scheme)";
+    shareBtn?.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+            showToast("تم نسخ الرابط");         
+        } catch {
+            showToast("تعذر النسخ", "error");  
+        }
+});
+
+
+    if (!availableList || !rankedList || !undoBtn || !submitBtn || !progressBar || !progressText) {
+        // nothing to init
+    } else {
+
+        const titleById = {};
+        document.querySelectorAll('.option-card').forEach(btn => {
+            const id = btn.dataset.id;
+            const text = btn.querySelector('.font-medium')?.textContent?.trim();
+            if (id && text) titleById[id] = text;
+        });
+
+        availableList.addEventListener('click', (e) => {
+            const btn = e.target.closest('.option-card');
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            if (ranked.includes(id)) return;
+
+            ranked.push(id);
+            btn.remove();
+
+            renderRanked();
+            updateUI();
+            updateRankInputs();
+        });
+
+        window.undoPick = function () {
+            if (ranked.length === 0) return;
+
+            const lastId = ranked.pop();
+            const lastCard = document.querySelector(`.ranked-card[data-id="${lastId}"]`);
+            if (!lastCard) return;
+
+            lastCard.remove();
+
+            const title = titleById[lastId] ?? 'خيار';
+
+            const newBtn = document.createElement('button');
+            newBtn.type = 'button';
+            newBtn.className = 'option-card w-full text-right p-4 rounded-2xl border bg-white hover:bg-purple-50 hover:border-purple-300 transition flex items-center gap-3';
+            newBtn.dataset.id = lastId;
+            newBtn.innerHTML = `
+                <span class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
+                    <i class="fa-solid fa-star"></i>
+                </span>
+                <span class="font-medium text-gray-800 text-sm">${escapeHtml(title)}</span>
+                <span class="ml-auto text-xs text-gray-400 inline-flex items-center gap-2">
+                    اضغط للاختيار
+                    <i class="fa-solid fa-arrow-left"></i>
+                </span>
+            `;
+
+            availableList.appendChild(newBtn);
+
+            if (ranked.length === 0) {
+                rankedList.innerHTML = `
+                    <div class="text-sm text-gray-400 leading-relaxed">
+                        لم يتم اختيار أي خيار بعد — ابدأ باختيار الأفضل من اليسار 👈
+                    </div>`;
+            } else {
+                renderRanked();
+            }
+
+            updateUI();
+            updateRankInputs();
+        }
+
+        function renderRanked() {
+            rankedList.innerHTML = '';
+
+            ranked.forEach((id, index) => {
+                const rankNo = index + 1;
+                const title = titleById[id] ?? 'خيار';
+
+                const card = document.createElement('div');
+                card.className = 'ranked-card flex items-center gap-3 p-3 rounded-2xl bg-gray-50 border';
+                card.dataset.id = id;
+
+                card.innerHTML = `
+                    <span class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                        #${rankNo}
+                    </span>
+                    <span class="ranked-title text-sm font-medium text-gray-800">${escapeHtml(title)}</span>
+                    <span class="ml-auto text-xs text-gray-400">
+                        ${rankNo === 1 ? '<i class="fa-solid fa-crown text-yellow-500"></i> الأفضل' : ''}
+                    </span>
+                `;
+
+                rankedList.appendChild(card);
+            });
+        }
+
+        function updateUI() {
+            undoBtn.disabled = ranked.length === 0;
+            submitBtn.disabled = ranked.length !== totalOptions;
+
+            const pct = totalOptions === 0 ? 0 : Math.round((ranked.length / totalOptions) * 100);
+            progressBar.style.width = pct + '%';
+            progressText.textContent = `${ranked.length} / ${totalOptions}`;
+
+            doneHint.classList.toggle('hidden', ranked.length !== totalOptions);
+        }
+        
+        function updateRankInputs() {
+            const container = document.getElementById('rankInputs');
+            container.innerHTML = '';
+
+            ranked.forEach((id, i) => {
+                const opt = document.createElement('input');
+                opt.type = 'hidden';
+                opt.name = `Rankings[${i}].OptionId`;
+                opt.value = id;
+
+                const rank = document.createElement('input');
+                rank.type = 'hidden';
+                rank.name = `Rankings[${i}].RankNumber`;
+                rank.value = i + 1;
+
+                container.appendChild(opt);
+                container.appendChild(rank);
+            });
+        }
+
+        function escapeHtml(str) {
+            return (str ?? '').toString().replace(/[&<>"']/g, (m) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[m]));
+        }
+        const shareBtn = document.getElementById("ShareBtn");
+
+        const shareUrl = "@Url.Action("Rank", "Votes", new { id = Model.Vote.VoteId }, protocol: Context.Request.Scheme)";
+
+        shareBtn?.addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+
+                shareBtn.classList.add("ring-2","ring-green-300");
+                setTimeout(() => shareBtn.classList.remove("ring-2","ring-green-300"), 800);
+            } catch {
+                alert("تعذر النسخ، انسخ الرابط يدويًا:\n" + shareUrl);
+            }
+        });
+
+        updateUI();
+        updateRankInputs();
+    }
+</script>
+}
