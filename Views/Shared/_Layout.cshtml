@@ -1,50 +1,124 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - VotingSystem</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/VotingSystem.styles.css" asp-append-version="true"/>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - VoteHub</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/flowbite@latest/dist/flowbite.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          referrerpolicy="no-referrer" />
+
+    
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
 </head>
-<body>
-<header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container-fluid">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">VotingSystem</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
-<div class="container">
-    <main role="main" class="pb-3">
-        @RenderBody()
-    </main>
+
+
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+@await Html.PartialAsync("_Navbar")
+
+<main class="flex-1">
+    @RenderBody()
+</main>
+
+@await Html.PartialAsync("_Footer")
+
+
+@RenderSection("Scripts", required: false)
+
+
+<div id="toastContainer"
+     class="fixed top-20 left-1/2 -translate-x-1/2 z-[9999]
+            flex flex-col gap-3 w-[92%] sm:w-auto max-w-md">
 </div>
 
-<footer class="border-top footer text-muted">
-    <div class="container">
-        &copy; 1447 - VotingSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-    </div>
-</footer>
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-@await RenderSectionAsync("Scripts", required: false)
+
+
 </body>
 </html>
+
+<script>
+    function toggleProfileMenu() {
+        document.getElementById('profileMenu')
+            ?.classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function (e) {
+        const btn = document.getElementById('profileBtn');
+        const menu = document.getElementById('profileMenu');
+        if (!btn || !menu) return;
+
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+        window.showToast = function (message, type = "success") {
+        const container = document.getElementById("toastContainer");
+        if (!container) return;
+
+        const styles = {
+        success: {
+        border: "border-green-200",
+        icon: "fa-solid fa-circle-check text-green-600"
+    },
+        error: {
+        border: "border-red-200",
+        icon: "fa-solid fa-circle-xmark text-red-600"
+    },
+        info: {
+        border: "border-gray-200",
+        icon: "fa-solid fa-circle-info text-gray-700"
+    }
+    };
+
+        const s = styles[type] ?? styles.info;
+
+        const toast = document.createElement("div");
+        toast.className = `
+      bg-white ${s.border}
+      border shadow-lg rounded-2xl px-4 py-3
+      flex items-center gap-3 text-sm text-gray-800
+      transition-all duration-300
+      opacity-0 translate-y-3
+    `;
+
+        toast.innerHTML = `
+      <i class="${s.icon}"></i>
+      <div class="flex-1 leading-relaxed">${message}</div>
+      <button type="button" class="text-gray-400 hover:text-gray-700">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    `;
+
+        toast.querySelector("button").addEventListener("click", () => {
+        toast.remove();
+    });
+
+        container.appendChild(toast);
+
+        requestAnimationFrame(() => {
+        toast.classList.remove("opacity-0", "translate-y-3");
+        toast.classList.add("opacity-100", "translate-y-0");
+    });
+
+        setTimeout(() => {
+        toast.classList.remove("opacity-100", "translate-y-0");
+        toast.classList.add("opacity-0", "translate-y-3");
+        setTimeout(() => toast.remove(), 250);
+    }, 2200);
+    };
+
+</script>
