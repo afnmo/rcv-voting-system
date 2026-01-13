@@ -1,0 +1,239 @@
+@model VotingSystem.ViewModels.PublicResultsViewModel
+@using VotingSystem.Models
+@using VotingSystem.Services
+
+@{
+    ViewData["Title"] = "نتائج التصويت";
+
+    var vote = Model.Vote;
+    var result = Model.Result;
+
+    string OptName(Guid id) => vote.Options.First(o => o.OptionId == id).OptionText;
+    
+    var rounds = result.Rounds ?? new List<RcvRound>();
+    
+    var totalVotes = rounds?.FirstOrDefault()?.VoteCounts?.Sum(x => x.Value) ?? 0;
+    
+    string? winner = null;
+    if (!result.IsTie && result.WinningOptionId != null)
+        winner = OptName(result.WinningOptionId.Value);
+    
+    
+    var lastRound = rounds.LastOrDefault();
+    
+    var topOrdered = lastRound?.VoteCounts?
+                         .OrderByDescending(x => x.Value)
+                         .ToList() 
+                     ?? new List<KeyValuePair<Guid, int>>();
+
+    var top2Id = topOrdered.Count > 1 ? topOrdered[1].Key : (Guid?)null;
+    var top3Id = topOrdered.Count > 2 ? topOrdered[2].Key : (Guid?)null;
+
+}
+
+<div class="max-w-6xl mx-auto px-6 py-12 space-y-10">
+    
+    <section class="text-center space-y-3">
+        <div class="text-sm text-gray-500">النتيجة النهائية</div>
+
+        @if (totalVotes == 0)
+        {
+            <h1 class="text-3xl md:text-4xl font-semibold text-gray-900">
+                لا توجد أصوات
+            </h1>
+        }
+        else if (result.IsTie)
+        {
+            <div class="space-y-4">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-handshake text-gray-400 text-2xl"></i>
+                    <h1 class="text-3xl md:text-4xl font-semibold text-gray-900">
+                        تعادل
+                    </h1>
+                </div>
+                
+                <div class="text-sm text-gray-500">
+                    بين الخيارات التالية:
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-2">
+                    @foreach (var id in result.TiedOptionIds ?? new List<Guid>())
+                    {
+                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                             bg-white border border-gray-200 text-sm text-gray-800 shadow-sm">
+                            <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                            @OptName(id)
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+        
+        else
+        {
+            <h1 class="text-3xl md:text-4xl font-semibold text-gray-900">
+                الفائز: <span class="text-purple-600">@winner</span>
+            </h1>
+        }
+    </section>
+    
+    @if (!result.IsTie && result.WinningOptionId != null && (top2Id != null || top3Id != null))
+    {
+        <div class="mt-3 flex flex-wrap justify-center gap-2 text-sm text-gray-500">
+
+            @if (top2Id != null)
+            {
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 border border-gray-200">
+                    <span class="text-xs font-normal text-gray-500">#2</span>
+                    <span class="text-sm font-medium text-gray-800">@OptName(top2Id.Value)</span>
+                </span>
+            }
+
+            @if (top3Id != null)
+            {
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 border border-gray-200">
+                    <span class="text-xs font-normal text-gray-500">#3</span>
+                    <span class="text-sm font-medium text-gray-800">@OptName(top3Id.Value)</span>
+                </span>
+            }
+
+        </div>
+    }
+
+    
+    <section class="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-gray-500">
+
+        <span class="inline-flex items-center gap-2">
+            <i class="fa-regular fa-circle-question text-gray-400"></i>
+            @vote.Title
+        </span>
+
+        <span class="text-gray-300">·</span>
+
+        <span class="inline-flex items-center gap-2">
+            <i class="fa-regular fa-user text-gray-400"></i>
+            @totalVotes صوت
+        </span>
+
+        <span class="text-gray-300">·</span>
+
+        <span class="inline-flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-gray-400"></i>
+            @rounds.Count جولات
+        </span>
+
+    </section>
+
+    <hr class="border-gray-200" />
+    
+    @if (rounds == null || rounds.Count == 0)
+    {
+        <div class="text-center text-sm text-gray-500 py-8">
+            لا توجد جولات لعرضها.
+        </div>
+    }
+    else
+    {
+        <section class="space-y-6">
+
+            <!-- TABS -->
+            <div class="flex justify-center gap-2 flex-wrap">
+                @for (int i = 0; i < rounds.Count; i++)
+                {
+                    <button
+                        class="round-tab px-4 py-2 rounded-full text-sm font-medium border border-gray-200
+                               bg-white text-gray-700 hover:bg-gray-100 transition"
+                        data-round="@i">
+                        الجولة @(i + 1)
+                    </button>
+                }
+            </div>
+            
+            @for (int i = 0; i < rounds.Count; i++)
+            {
+                var round = rounds[i];
+                var max = round.VoteCounts.Any() ? round.VoteCounts.Max(x => x.Value) : 0;
+
+                <div class="round-panel @(i == 0 ? "" : "hidden") space-y-5"
+                     data-round-panel="@i">
+                    
+                    <div class="flex justify-between items-center text-sm text-gray-600">
+                        <div>الجولة @round.RoundNumber</div>
+
+                        @if (round.EliminatedOptionId != null)
+                        {
+                            <div class="text-red-600">
+                                تم استبعاد:
+                                <span class="font-medium">@OptName(round.EliminatedOptionId.Value)</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-green-600">
+                                الجولة النهائية
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="space-y-3">
+                        @foreach (var kv in round.VoteCounts.OrderByDescending(x => x.Value))
+                        {
+                            var optId = kv.Key;
+                            var votesCount = kv.Value;
+
+                            var percent = max == 0 ? 0 : (votesCount * 100) / max;
+                            var isEliminated = (round.EliminatedOptionId != null && optId == round.EliminatedOptionId.Value);
+
+                            <div class="flex items-center gap-4 @(isEliminated ? "opacity-40" : "")">
+                                <div class="w-32 text-sm font-medium text-gray-800 truncate">
+                                    @OptName(optId)
+                                </div>
+
+                                <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div class="h-2 bg-purple-500 rounded-full"
+                                         style="width:@percent%"></div>
+                                </div>
+
+                                <div class="w-10 text-xs text-gray-600 text-right">
+                                    @votesCount
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </section>
+    }
+    
+    <div class="pt-10 text-center text-xs text-gray-400">
+        VoteHub · Results
+    </div>
+</div>
+
+<script>
+    const tabs = document.querySelectorAll('.round-tab');
+    const panels = document.querySelectorAll('.round-panel');
+
+    function activateTab(tab) {
+        tabs.forEach(t => {
+            t.classList.remove('bg-purple-50', 'text-purple-700', 'border-purple-200');
+            t.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+        });
+
+        tab.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+        tab.classList.add('bg-purple-50', 'text-purple-700', 'border-purple-200');
+    }
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const idx = tab.dataset.round;
+
+            activateTab(tab);
+
+            panels.forEach(p => p.classList.add('hidden'));
+            document.querySelector(`[data-round-panel="${idx}"]`).classList.remove('hidden');
+        });
+    });
+
+    if (tabs.length) activateTab(tabs[0]);
+</script>
