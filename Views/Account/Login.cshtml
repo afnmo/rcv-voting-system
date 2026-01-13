@@ -1,0 +1,79 @@
+@model VotingSystem.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "تسجيل الدخول";
+    
+}
+
+
+<div class="max-w-md mx-auto py-24">
+
+    <!-- Heading Group -->
+    <div class="text-center space-y-3 mb-14">
+        <h2 class="text-2xl font-semibold text-gray-700">
+            مرحبًا بعودتك 👋
+        </h2>
+
+        <p class="text-gray-500">
+            سجّل دخولك وكمّل تصويتك
+        </p>
+    </div>
+
+    
+    <!-- Form Group -->
+    <form asp-controller="Account" asp-action="Login" method="post" class="space-y-8">
+
+        <!-- Inputs Group -->
+        <div class="space-y-6">
+
+            <div>
+                <input
+                    asp-for="Email"
+                    type="email"
+                    placeholder="البريد الإلكتروني"
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <span asp-validation-for="Email" class="text-red-500 text-xs"></span>
+            </div>
+
+            <div>
+                <input
+                    asp-for="Password"
+                    type="password"
+                    placeholder="كلمة المرور"
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+                <span asp-validation-for="Password" class="text-red-500 text-xs"></span>
+
+            </div>
+
+        </div>
+        
+        <div asp-validation-summary="ModelOnly"
+             class="text-red-500 text-sm text-center">
+        </div>
+
+
+
+        <!-- Action Group -->
+        <div class="space-y-6">
+
+            <button
+                type="submit"
+                class="w-full bg-purple-600 text-white py-3 rounded-xl hover:bg-purple-700 transition"
+            >
+                تسجيل الدخول
+            </button>
+
+            <p class="text-center text-sm text-gray-500">
+                ليس لديك حساب؟
+                <a asp-action="Register" class="text-purple-600 hover:underline font-medium">
+                    إنشاء حساب
+                </a>
+            </p>
+
+        </div>
+
+    </form>
+
+</div>
