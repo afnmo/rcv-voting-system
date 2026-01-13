@@ -1,5 +1,10 @@
 namespace VotingSystem.Models;
 
+public enum VoteVisibility
+{
+    Public = 0,
+    Private = 1
+}
 public class Vote
 {
     public Guid VoteId { get; set; }
@@ -15,6 +20,8 @@ public class Vote
 
     public VoteStatus Status { get; set; }
     
+    public VoteVisibility Visibility { get; set; } = VoteVisibility.Public;
+
     public Guid? WinningOptionId { get; set; }
     public Option? WinningOption { get; set; }
 
