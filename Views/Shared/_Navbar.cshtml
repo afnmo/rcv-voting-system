@@ -1,14 +1,17 @@
 <nav class="bg-white border-b">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         
-        <div class="text-xl font-bold text-purple-600">
-            VoteHub
-        </div>
-        
+        <a asp-controller="Home" asp-action="Index" class="flex items-center">
+            <img src="~/images/VOTISE.svg"
+                 alt="VOTISE"
+                 class="h-8 md:h-9 w-auto"/>
+        </a>
+
+
         <div class="flex gap-6 text-sm">
             <a asp-controller="Home" asp-action="Index" class="hover:text-purple-600">الرئيسية</a>
             <a asp-controller="Votes" asp-action="Index" class="hover:text-purple-600">التصويتات</a>
-            
+
             @if (User.Identity.IsAuthenticated)
             {
                 <a asp-controller="Votes" asp-action="Create" class="hover:text-purple-600">
@@ -16,61 +19,61 @@
                 </a>
             }
         </div>
-        
-<div class="flex items-center gap-3">
 
-    @if (User.Identity.IsAuthenticated)
-    {
-        <div class="relative">
-            <button id="profileBtn"
-                    onclick="toggleProfileMenu()"
-                    class="w-9 h-9 rounded-full bg-purple-600
+        <div class="flex items-center gap-3">
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="relative">
+                    <button id="profileBtn"
+                            onclick="toggleProfileMenu()"
+                            class="w-9 h-9 rounded-full bg-purple-600
                            text-white text-sm font-bold
                            flex items-center justify-center
                            hover:bg-purple-700 transition"
-                    aria-label="Profile menu">
-                <i class="fa-solid fa-user"></i>
-            </button>
+                            aria-label="Profile menu">
+                        <i class="fa-solid fa-user"></i>
+                    </button>
 
-            <div id="profileMenu"
-                 class="hidden absolute left-0 mt-2 w-44
+                    <div id="profileMenu"
+                         class="hidden absolute left-0 mt-2 w-44
                         bg-white border rounded-xl shadow-lg
                         text-sm z-50">
 
-                <a asp-controller="Profile" asp-action="Index"
-                   class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
-                    <i class="fa-regular fa-user"></i>
-                    حسابي
-                </a>
-                
-                <div class="border-t my-1"></div>
+                        <a asp-controller="Profile" asp-action="Index"
+                           class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50">
+                            <i class="fa-regular fa-user"></i>
+                            حسابي
+                        </a>
 
-                <form asp-controller="Account" asp-action="Logout" method="post">
-                    <button type="submit"
-                            class="w-full flex items-center gap-2 px-4 py-2
+                        <div class="border-t my-1"></div>
+
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit"
+                                    class="w-full flex items-center gap-2 px-4 py-2
                                    text-red-600 hover:bg-red-50">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        تسجيل الخروج
-                    </button>
-                </form>
-            </div>
-        </div>
-    }
-    else
-    {
-        <a asp-controller="Account" asp-action="Login"
-           class="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100">
-            <i class="fa-solid fa-right-to-bracket"></i>
-            تسجيل الدخول
-        </a>
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                تسجيل الخروج
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login"
+                   class="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-100">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    تسجيل الدخول
+                </a>
 
-        <a asp-controller="Account" asp-action="Register"
-           class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-            <i class="fa-solid fa-user-plus"></i>
-            إنشاء حساب
-        </a>
-    }
-</div>
+                <a asp-controller="Account" asp-action="Register"
+                   class="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    <i class="fa-solid fa-user-plus"></i>
+                    إنشاء حساب
+                </a>
+            }
+        </div>
 
 
     </div>
