@@ -5,28 +5,6 @@
     var fullName = User.FindFirst("FullName")?.Value ?? "المستخدم";
 }
 
-<style>
-    .tab-btn {
-        padding-bottom: 0.5rem;
-        font-size: 0.875rem;
-        color: #6b7280;
-        border-bottom: 2px solid transparent;
-        display: flex;
-        align-items: center;
-        gap: .4rem;
-        transition: all .2s;
-    }
-
-    .tab-btn:hover {
-        color: #374151; 
-    }
-
-    .tab-active {
-        color: #6d28d9; 
-        border-color: #6d28d9;
-        font-weight: 500;
-    }
-</style>
 
 <div class="max-w-5xl mx-auto px-6 py-10">
 
@@ -46,14 +24,14 @@
 
         <button id="createdBtn"
                 onclick="showTab('created')"
-                class="tab-btn tab-active">
+                class="tab-btn tab-active inline-flex items-center gap-2 pb-2 text-sm text-purple-700 border-b-2 border-purple-600 font-medium transition">
             <i class="fa-solid fa-plus"></i>
             أنشأتها
         </button>
 
         <button id="joinedBtn"
                 onclick="showTab('joined')"
-                class="tab-btn">
+                class="tab-btn inline-flex items-center gap-2 pb-2 text-sm text-gray-500 border-b-2 border-transparent transition hover:text-gray-700">
             <i class="fa-solid fa-check"></i>
             شاركت فيها
         </button>
@@ -142,7 +120,6 @@
     </div>
 
 </div>
-
 <script>
     function showTab(tab) {
         document.getElementById('createdTab').classList.add('hidden');
@@ -150,9 +127,16 @@
 
         document.getElementById(tab + 'Tab').classList.remove('hidden');
 
-        document.getElementById('createdBtn').classList.remove('tab-active');
-        document.getElementById('joinedBtn').classList.remove('tab-active');
+        const createdBtn = document.getElementById('createdBtn');
+        const joinedBtn = document.getElementById('joinedBtn');
 
-        document.getElementById(tab + 'Btn').classList.add('tab-active');
+        [createdBtn, joinedBtn].forEach(btn => {
+            btn.classList.remove('text-purple-700', 'border-purple-600', 'font-medium');
+            btn.classList.add('text-gray-500', 'border-transparent');
+        });
+
+        const activeBtn = document.getElementById(tab + 'Btn');
+        activeBtn.classList.remove('text-gray-500', 'border-transparent');
+        activeBtn.classList.add('text-purple-700', 'border-purple-600', 'font-medium');
     }
 </script>
