@@ -173,6 +173,14 @@ public class VotesController : Controller
         _context.Votes.Add(vote);
         await _context.SaveChangesAsync();
 
+        _context.ChangeTracker.Clear();
+
+        var savedCount = await _context.Votes.CountAsync();
+        Console.WriteLine("✅ Vote Saved: " + vote.VoteId);
+        Console.WriteLine("✅ Votes in DB now: " + savedCount);
+        Console.WriteLine("✅ DB Name: " + _context.Database.GetDbConnection().Database);
+        Console.WriteLine("✅ Conn: " + _context.Database.GetDbConnection().ConnectionString);
+
         return RedirectToAction("Created", new { id = vote.VoteId });
 
     }
@@ -392,6 +400,107 @@ public async Task<IActionResult> Rank(Guid id, SubmitBallotDto dto)
 
     TempData["ToastSuccess"] = "تم تسجيل صوتك بنجاح ✅";
     return RedirectToAction("Rank", new { id });
+}
+
+[HttpGet]
+public async Task<IActionResult> Edit(Guid id)
+{
+    var vote = await _context.Votes
+        .Include(v => v.Options)
+        .Include(v => v.Ballots)
+        .FirstOrDefaultAsync(v => v.VoteId == id);
+
+    if (vote == null) return NotFound();
+
+    if (vote.Ballots.Any())
+    {
+        TempData["ToastError"] = "لا يمكن تعديل التصويت بعد وجود مشاركين.";
+        return RedirectToAction("Details", new { id });
+    }
+
+    return View(vote);
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Edit(Guid id, Vote model)
+{
+    var vote = await _context.Votes
+        .Include(v => v.Ballots)
+        .FirstOrDefaultAsync(v => v.VoteId == id);
+
+    if (vote == null) return NotFound();
+
+    // ممنوع تعديل اذا فيه مشاركين (اختياري)
+    if (vote.Ballots.Any())
+    {
+        TempData["ToastError"] = "لا يمكن تعديل التصويت بعد وجود مشاركين.";
+        return RedirectToAction("Details", new { id });
+    }
+
+    vote.Title = model.Title;
+    vote.Description = model.Description;
+    
+    vote.EndTime = model.EndTime;
+    
+    await _context.SaveChangesAsync();
+
+    TempData["ToastSuccess"] = "تم تحديث التصويت ✅";
+    return RedirectToAction("Details", new { id });
+}
+
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ReOpen(Guid id)
+{
+    var vote = await _context.Votes.FirstOrDefaultAsync(v => v.VoteId == id);
+    if (vote == null) return NotFound();
+
+    vote.Status = VoteStatus.Open;
+
+    var now = DateTime.UtcNow;
+
+    if (vote.EndTime <= now)
+        vote.EndTime = now.AddHours(6); 
+
+    if (vote.StartTime > now)
+        vote.StartTime = now;
+
+    await _context.SaveChangesAsync();
+
+    TempData["ToastSuccess"] = "تمت إعادة فتح التصويت ✅";
+    return RedirectToAction("Details", new { id });
+}
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Delete(Guid id)
+{
+    var vote = await _context.Votes
+        .Include(v => v.Options)
+        .Include(v => v.Ballots)
+        .ThenInclude(b => b.Rankings)
+        .FirstOrDefaultAsync(v => v.VoteId == id);
+
+    if (vote == null) return NotFound();
+
+    var allRankings = vote.Ballots.SelectMany(b => b.Rankings).ToList();
+    if (allRankings.Any())
+        _context.BallotRankings.RemoveRange(allRankings);
+
+    if (vote.Ballots.Any())
+        _context.Ballots.RemoveRange(vote.Ballots);
+
+    if (vote.Options.Any())
+        _context.Options.RemoveRange(vote.Options);
+
+    _context.Votes.Remove(vote);
+
+    await _context.SaveChangesAsync();
+
+    TempData["ToastSuccess"] = "تم حذف التصويت 🗑️";
+    return RedirectToAction("Index");
 }
 
 
