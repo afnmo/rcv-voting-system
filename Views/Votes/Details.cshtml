@@ -8,6 +8,9 @@
     var isOpen = Model.Status == VoteStatus.Open && Model.StartTime <= now && Model.EndTime > now;
     var timeLeft = Model.EndTime - now;
     var hasTimeLeft = timeLeft.TotalSeconds > 0;
+    
+    var canEdit = (Model.Ballots?.Count() ?? 0) == 0;
+
 }
 
 <div class="max-w-6xl mx-auto py-10 px-6 space-y-8">
@@ -182,12 +185,23 @@
                         </form>
                     }
 
-                    <a href="#"
-                       class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                              text-sm font-medium border border-gray-200 hover:bg-gray-50 transition opacity-60 cursor-not-allowed">
-                        <i class="fa-regular fa-pen-to-square"></i>
-                        تعديل التصويت (قريبًا)
-                    </a>
+                    @if (canEdit)
+                    {
+                        <a asp-action="Edit" asp-controller="Votes" asp-route-id="@Model.VoteId"
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+              text-sm font-medium border border-gray-200 hover:bg-gray-50 transition">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                            تعديل التصويت
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+                text-sm font-medium border border-gray-200 opacity-60 cursor-not-allowed">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                            لا يمكن تعديل التصويت بعد وجود مشاركين
+                        </div>
+                    }
 
                     <form asp-action="Delete" asp-controller="Votes" method="post" onsubmit="return confirmDelete();">
                         @Html.AntiForgeryToken()

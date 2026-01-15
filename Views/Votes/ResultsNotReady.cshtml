@@ -30,8 +30,25 @@
             الانتقال لصفحة التصويت
         </a>
 
-        <div class="mt-6 text-[11px] text-gray-400">
-            ينتهي: @Model.EndTime.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")
-        </div>
+        @{
+            var dt = Model?.EndTime ?? DateTime.MinValue;
+
+            // UmAlQuraCalendar supports approx: 1900-04-30 to 2077-11-16
+            var min = new DateTime(1900, 4, 30);
+            var max = new DateTime(2077, 11, 16, 23, 59, 59);
+        }
+
+        @* <div class="mt-6 text-[11px] text-gray-400"> *@
+        @*     ينتهي: *@
+        @*     @if (dt < min || dt > max) *@
+        @*     { *@
+        @*         <span>—</span> *@
+        @*     } *@
+        @*     else *@
+        @*     { *@
+        @*         <span>@dt.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</span> *@
+        @*     } *@
+        @* </div> *@
+
     </div>
 </div>
